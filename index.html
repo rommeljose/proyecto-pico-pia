@@ -372,6 +372,8 @@ function fichas() {
   mu.style.display = vieja ? "block" : "none";
   if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, del ${fecha(P.fin)} (12 horas hasta las ${hhmm(P.fin)}). La publicación automática cada 2 minutos está en construcción.`;
   document.getElementById("m-proto").classList.toggle("muestra-vieja", vieja);
+  document.getElementById("t-proto").classList.toggle("muestra-vieja", vieja);
+  if (vieja) document.getElementById("f-desde").textContent = "así estaba a las " + hhmm(P.fin);
   document.getElementById("pie-gen").textContent = "panel generado a las " + hhmm(P.generado) + " (hora de Venezuela)";
 }
 
