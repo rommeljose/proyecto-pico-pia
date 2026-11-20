@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estación Pico-Pia</title>
+<meta name="description" content="Estación geofísica de bajo costo en Cumaná, estado Sucre: la señal del sensor en las últimas 12 horas.">
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0;
+  --surface-1: #fcfcfb;
+  --border: #dddcd6;
+  --grid: #e8e7e2;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #77766f;
+  --series-1: #2a78d6;
+  --series-1-tint: #a9c7ee;
+  --series-2: #eb6834;
+  --good: #008300;
+  --warning: #b86e00;
+  --critical: #c42b2a;
+  --accent: #1a4f8f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --border: #34332f;
+    --grid: #2a2a27;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #94938a;
+    --series-1: #3987e5;
+    --series-1-tint: #2c4a70;
+    --series-2: #d95926;
+    --good: #0ca30c;
+    --warning: #d99a2b;
+    --critical: #e66767;
+    --accent: #8fb8ee;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #111110; --surface-1: #1a1a19; --border: #34332f; --grid: #2a2a27;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
+  --series-1: #3987e5; --series-1-tint: #2c4a70; --series-2: #d95926;
+  --good: #0ca30c; --warning: #d99a2b; --critical: #e66767; --accent: #8fb8ee;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.envoltura { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header { padding: 28px 0 8px; }
+.antetitulo { color: var(--text-muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+h1 { font-size: clamp(24px, 4.2vw, 34px); line-height: 1.15; margin: 6px 0 8px; }
+.sub { color: var(--text-secondary); margin: 0 0 12px; max-width: 60ch; }
+.aviso {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--surface-1); border: 1px solid var(--border); border-left: 4px solid var(--warning);
+  border-radius: 8px; padding: 10px 14px; font-size: 14px; color: var(--text-secondary); margin: 8px 0 18px;
+}
+.aviso b { color: var(--text-primary); }
+.aviso-p { margin: 0 0 6px; }
+.aviso ul { margin: 0 0 6px; padding-left: 20px; }
+.aviso li { margin: 1px 0; }
+.capac { margin: 4px 0 8px; font-size: 13.5px; }
+.capac td, .capac th { text-align: left; padding: 4px 8px 4px 0; }
+.capac td:last-child, .capac th:last-child { text-align: right; white-space: nowrap; }
+.tarjeta {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; margin: 0 0 16px;
+}
+.fichas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 720px) { .fichas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ficha { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.ficha .et { font-size: 13px; color: var(--text-muted); }
+.ficha .va { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.ficha .no { font-size: 12.5px; color: var(--text-secondary); }
+.punto { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+h2 { font-size: 19px; margin: 0 0 4px; }
+.nota { font-size: 13.5px; color: var(--text-secondary); margin: 0 0 10px; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-secondary); margin: 0 0 8px; }
+.leyenda i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.lienzo { position: relative; width: 100%; }
+canvas { display: block; width: 100%; touch-action: pan-y; }
+.tip {
+  position: absolute; pointer-events: none; z-index: 2; display: none;
+  background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 9px; font-size: 13px; line-height: 1.35;
+  box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.tip .m { color: var(--text-muted); }
+details { margin-top: 10px; font-size: 14px; }
+summary { cursor: pointer; color: var(--accent); }
+table { border-collapse: collapse; width: 100%; margin-top: 8px; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--grid); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text-muted); font-weight: 600; }
+.texto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .texto { grid-template-columns: 1fr; } }
+.texto h3 { font-size: 16.5px; margin: 0 0 6px; }
+.texto p { margin: 0 0 8px; color: var(--text-secondary); font-size: 15px; }
+.porque { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 20px; align-items: start; }
+@media (max-width: 640px) { .porque { grid-template-columns: 1fr; } .porque-widget { justify-self: center; } }
+.porque p { margin: 0 0 10px; color: var(--text-secondary); }
+.porque p b { color: var(--text-primary); }
+.porque ul { margin: 0 0 10px; padding-left: 20px; color: var(--text-secondary); }
+.porque h2 { margin-bottom: 10px; }
+.porque a { color: var(--accent); text-underline-offset: 2px; }
+.fuente { font-size: 12.5px; color: var(--text-muted); }
+.porque-widget iframe { display: block; border-radius: 8px; }
+.porque-widget figcaption { font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+/* menú fijo */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+section[id] { scroll-margin-top: 64px; }
+.menu {
+  position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--surface-0) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); margin: 0 -16px 18px; padding: 0 16px;
+}
+.menu ul { list-style: none; display: flex; gap: 4px; margin: 0; padding: 8px 0; overflow-x: auto; scrollbar-width: none; }
+.menu a {
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; text-decoration: none;
+  color: var(--text-secondary); font-size: 14.5px; padding: 6px 12px; border-radius: 999px; border: 1px solid transparent;
+}
+.menu a:hover { background: var(--surface-1); border-color: var(--border); color: var(--text-primary); }
+.menu a[aria-current="true"] { color: var(--text-primary); background: var(--surface-1); border-color: var(--border); }
+.menu a.destaca { color: var(--text-primary); font-weight: 600; border-color: var(--good); }
+.menu a.destaca.muestra-vieja { border-color: var(--warning); }
+/* indicador «en vivo»: un punto con halo que late */
+.latido { position: relative; width: 9px; height: 9px; border-radius: 50%; background: var(--good); flex: none; }
+.latido::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--good);
+  animation: latido 1.6s ease-out infinite;
+}
+.muestra-vieja .latido, .muestra-vieja .latido::after { background: var(--warning); }
+@media (max-width: 480px) { .menu .largo { display: none; } .menu a { padding: 6px 10px; } }
+@keyframes latido { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .latido::after { animation: none; } }
+.seccion-t { font-size: 22px; margin: 26px 0 10px; display: flex; align-items: center; gap: 10px; }
+.muestra {
+  display: none; background: var(--surface-1); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  border-radius: 8px; padding: 9px 14px; font-size: 14px; color: var(--text-secondary); margin: 0 0 14px;
+}
+.muestra b { color: var(--text-primary); }
+/* créditos y fotos */
+.fotos { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 14px; margin: 0 0 16px; }
+@media (max-width: 760px) { .fotos { grid-template-columns: 1fr 1fr; } .fotos figure:first-child { grid-column: 1 / -1; } }
+@media (max-width: 440px) { .fotos { grid-template-columns: 1fr; } }
+.fotos figure { margin: 0; background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fotos img { display: block; width: 100%; height: 300px; object-fit: cover; }
+.fotos img.abajo { object-position: center 85%; }
+.fotos figcaption { font-size: 13px; color: var(--text-secondary); padding: 8px 12px 10px; }
+.fotos figcaption b { color: var(--text-primary); }
+.creditos { margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 14.5px; }
+.creditos li { margin: 0 0 6px; }
+.creditos a, .muestra a { color: var(--accent); text-underline-offset: 2px; }
+footer { color: var(--text-muted); font-size: 13.5px; padding: 8px 0 32px; }
+footer b { color: var(--text-secondary); }
+.tema { float: right; background: none; border: 1px solid var(--border); color: var(--text-secondary);
+  border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="envoltura">
+<header>
+  <button class="tema" id="tema" type="button" aria-label="Cambiar tema claro u oscuro">◐ Tema</button>
+  <p class="antetitulo">Proyecto Pico-Pia · Cumaná, estado Sucre</p>
+  <h1>Una estación sismológica de bajo costo, funcionando</h1>
+  <p class="sub">Una red de estaciones sismológicas de bajo costo para el estado Sucre, y su primer prototipo, que ya registra de forma continua y automática.</p>
+</header>
+
+<nav class="menu" aria-label="Secciones">
+  <ul>
+    <li><a href="#porque">¿Por qué?</a></li>
+    <li><a href="#prototipo" class="destaca" id="m-proto"><span class="latido" aria-hidden="true"></span>Prototipo<span class="largo"> en banco de pruebas</span></a></li>
+    <li><a href="#creditos">Créditos<span class="largo"> y fotos</span></a></li>
+  </ul>
+</nav>
+
+<section class="tarjeta porque" id="porque" aria-labelledby="t-porque">
+  <div class="porque-texto">
+    <h2 id="t-porque">¿Por qué hacen falta estaciones locales, y por qué ahora?</h2>
+    <p><b>El oriente venezolano tiembla todos los días.</b> El estado Sucre, la región de mayor actividad sísmica
+    del país, está sobre la <a href="https://tecnologiacumanesa.blogspot.com/2026/07/la-falla-de-el-pilar.html" target="_blank" rel="noopener">falla de El Pilar</a>, parte del límite entre las placas del Caribe y de Sudamérica: unos
+    350 km entre la fosa de Cariaco y el golfo de Paria, casi todos bajo el mar.</p>
+    <p><b>La historia lo repite.</b> Cumaná ha sufrido terremotos destructores en 1530 (el primero conocido en el
+    territorio venezolano), 1629, 1684, <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-1766.html" target="_blank" rel="noopener">1766</a>, 1797, 1853 y 1929, y en 1997 llegó el <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-cariaco-de-1997.html" target="_blank" rel="noopener">de Cariaco</a> (Ms 6,8). Los de 1530
+    y 1853, con maremoto, se atribuyen al tramo submarino al oeste de la ciudad (Ms 7,2–7,4, unos tres siglos entre
+    uno y otro). Los de magnitud 6,1–6,3 junto a Cumaná (1629, 1797 y 1929) vuelven cada 150 ± 18 años. No se sabe
+    <i>cuándo</i> será el próximo, pero sí <i>dónde</i>.
+    <span class="fuente">(Altez y Audemard, 2008, Boletín Técnico IMME 46-2.)</span></p>
+    <p><b>Lo que falta son sensores cerca.</b> Con pocas estaciones lejanas, los sismos pequeños se localizan mal o no se
+    registran, y son justamente los que dibujan qué tramos de la falla están activos. Una red densa de estaciones
+    locales permite:</p>
+    <ul>
+      <li>localizar con precisión la sismicidad de cada tramo de falla;</li>
+      <li>avisar antes y mejor a Protección Civil;</li>
+      <li>conocer cómo responde el suelo de cada ciudad, para construir más seguro;</li>
+      <li>tener registrada la «línea base» <i>antes</i> del próximo terremoto, no después.</li>
+    </ul>
+    <p><b>Investigar nuestra propia realidad.</b> Buena parte de esta historia se reconstruyó con documentos de
+    archivo: el terremoto de 1629, que dejó en pie cuatro o cinco casas de Cumaná, era desconocido hasta 1999.
+    Las estaciones locales darán lo que los archivos no pueden: medir aquí, tramo a tramo, cómo se comportan
+    nuestras fallas y nuestros suelos, con datos propios y abiertos a las universidades del oriente.</p>
+    <p>Hacerlo con estaciones de bajo costo, construidas y mantenidas aquí, es lo que lo vuelve posible.
+    En el recuadro, los últimos sismos del país. Cada minuto destella unos segundos la sismicidad de las últimas tres semanas; también se puede ver con el botón <b>3 sem</b>.</p>
+  </div>
+  <figure class="porque-widget" style="margin:0">
+    <iframe src="https://catalogosismicovenezuela.sigeos.org/widget/ultimos.html?hist=60"
+            width="210" height="450" style="border:0" loading="lazy"
+            title="Últimos sismos de Venezuela (catálogo sísmico)"></iframe>
+    <figcaption>Datos públicos del FUNVISIS, actualizados cada 5 min</figcaption>
+  </figure>
+</section>
+
+<section id="prototipo" aria-labelledby="t-proto">
+<h2 class="seccion-t" id="t-proto"><span class="latido" aria-hidden="true"></span>Prototipo en banco de pruebas</h2>
+
+<div class="muestra" id="muestra" role="status"></div>
+
+<div class="aviso" role="note">
+    <span aria-hidden="true">⚠</span>
+    <div>
+      <p class="aviso-p"><b>Dónde está hoy.</b> La estación está en un tercer piso frente a una calle,
+      con un geófono de prueba de 10 Hz. Ese sitio sirve para afinar el equipo; no es el sitio para registrar sismos.</p>
+      <p class="aviso-p"><b>Qué sismos podrá registrar</b> en su sitio definitivo, con este geófono (estimación):
+      los <b>locales</b>, hasta 30 km, desde magnitud ≈ 1,5; los <b>regionales</b>, hasta 500 km, desde ≈ 2,5 a 4;
+      y de los <b>lejanos</b>, solo los grandes (≈ 7).</p>
+    </div>
+  </div>
+
+
+<section class="fichas" aria-label="Estado de la estación">
+  <div class="ficha"><div class="et">Estado</div><div class="va" id="f-estado">—</div><div class="no" id="f-desde"></div></div>
+  <div class="ficha"><div class="et">Muestras por segundo</div><div class="va" id="f-sps">—</div><div class="no">medidas, no nominales</div></div>
+  <div class="ficha"><div class="et">Muestras perdidas</div><div class="va" id="f-perd">—</div><div class="no">desde que arrancó</div></div>
+  <div class="ficha"><div class="et">Datos hasta</div><div class="va" id="f-fin">—</div><div class="no" id="f-edad"></div></div>
+</section>
+
+<section class="tarjeta" aria-labelledby="t-heli">
+  <h2 id="t-heli">Las últimas 12 horas</h2>
+  <p class="nota">Cada fila son 30 minutos, de arriba (lo más antiguo) abajo (lo más reciente), como en un sismograma de papel.
+  La altura de cada barra es el movimiento del suelo en 5 segundos. Hora de Venezuela.</p>
+  <div class="leyenda">
+    <span><i style="background:var(--series-1-tint)"></i>pico en 5 s</span>
+    <span><i style="background:var(--series-1)"></i>nivel medio (rms)</span>
+    <span><i style="background:var(--series-2);width:6px"></i>detección automática</span>
+  </div>
+  <div class="lienzo" id="c-heli"><canvas id="heli" aria-label="Helicorder de 12 horas"></canvas><div class="tip" id="tip-heli"></div></div>
+  <details>
+    <summary>Ver como tabla (por hora)</summary>
+    <div id="tabla"></div>
+  </details>
+</section>
+
+<section class="tarjeta" aria-labelledby="t-rec">
+  <h2 id="t-rec">Los últimos 2 minutos, en detalle</h2>
+  <p class="nota">Velocidad del suelo en nanómetros por segundo (nm/s). Un nanómetro es la millonésima parte de un milímetro.</p>
+  <div class="lienzo" id="c-rec"><canvas id="rec" aria-label="Traza de los últimos 2 minutos"></canvas><div class="tip" id="tip-rec"></div></div>
+</section>
+
+<section class="tarjeta texto">
+  <div>
+    <h3>¿Qué es?</h3>
+    <p>Una estación que mide el movimiento del suelo de forma continua, construida con componentes accesibles.
+    Un conversor de 24 bits digitaliza la señal de un geófono. Un núcleo de tiempo real la adquiere sin perder
+    muestras, y un sistema Linux la guarda y la sirve en los formatos estándar de las redes sismológicas.</p>
+  </div>
+  <div>
+    <h3>¿Qué se ve en la traza?</h3>
+    <p><b>Lo que debería verse, en su sitio definitivo:</b> sismos locales y regionales. Primero llega la
+    onda P, rápida y de poca amplitud, y segundos después la onda S, más fuerte. Cuanto más tiempo pasa entre
+    las dos, más lejos ocurrió el sismo: cada segundo de diferencia son unos 8 km. Entre un sismo y otro, un fondo
+    bajo y estable.</p>
+    <p><b>Lo que se ve hoy, en el banco de pruebas:</b> de madrugada, el fondo tranquilo del edificio.</p>
+    <h3>¿Qué sigue?</h3>
+    <p>Sincronización por GPS, un sensor calibrado, un sitio adecuado (planta baja, suelo firme) y una red piloto
+    de tres estaciones en el estado.</p>
+  </div>
+</section>
+
+</section>
+
+<section id="creditos" aria-labelledby="t-cred">
+<h2 class="seccion-t" id="t-cred">Créditos y fotos</h2>
+<div class="fotos">
+  <figure>
+    <img src="img/estacion-en-el-suelo.jpg" alt="La estación sobre un piso de granito: batería portátil, el geófono amarillo sobre su base y la tarjeta con su pantalla" loading="lazy" width="1000" height="463">
+    <figcaption><b>La estación en el suelo</b> durante una prueba nocturna: batería portátil, geófono y la tarjeta con su pantalla.</figcaption>
+  </figure>
+  <figure>
+    <img class="abajo" src="img/geofono-sm6.jpg" alt="Geófono SM-6 amarillo sobre una base metálica rotulada GEOFONO SM-6" loading="lazy" width="600" height="728">
+    <figcaption><b>El sensor:</b> un geófono SM-6 de 10 Hz, el «oído» de la estación. Convierte la velocidad del suelo en una tensión eléctrica.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/visor-golpes.jpg" alt="Pantalla de la estación mostrando una traza con dos sacudidas" loading="lazy" width="354" height="480">
+    <figcaption><b>El visor de la estación</b> registrando dos golpes en el piso, en el banco de pruebas.</figcaption>
+  </figure>
+</div>
+<section class="tarjeta" aria-label="Créditos">
+  <ul class="creditos">
+    <li><b>Responsable del proyecto:</b> Licenciado Físico Rommel Contreras.</li>
+    <li><b>Últimos sismos del país:</b> widget del <a href="https://sismos.sigeos.org/" target="_blank" rel="noopener">catálogo sísmico de Venezuela</a>, con datos públicos del FUNVISIS.</li>
+    <li><b>Historia sísmica de Cumaná:</b> Altez, R. y Audemard, F. (2008), <i>Boletín Técnico IMME</i> 46-2.</li>
+    <li><b>Divulgación:</b> <a href="https://tecnologiacumanesa.blogspot.com/2026/07/la-falla-de-el-pilar.html" target="_blank" rel="noopener">la falla de El Pilar</a>,
+      <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-1766.html" target="_blank" rel="noopener">el sismo de 1766</a> y
+      <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-cariaco-de-1997.html" target="_blank" rel="noopener">el de Cariaco de 1997</a>, en Tecnología Cumanesa.</li>
+    <li><b>Detalles técnicos de la tarjeta:</b> <a href="https://github.com/rommeljose/pico-pi-imx7d" target="_blank" rel="noopener">repositorio pico-pi-imx7d</a>.</li>
+  </ul>
+</section>
+</section>
+
+<footer>
+  <b>Responsable:</b> Licenciado Físico Rommel Contreras · Estación XX.PICO1, canal EHZ ·
+  <span id="pie-gen"></span>
+</footer>
+</div>
+
+<script>
+"use strict";
+const OFF = -4 * 3600;                         // Venezuela, UTC−4 todo el año
+const hhmm = (t, seg) => { const d = new Date((t + OFF) * 1000);
+  const p = n => String(n).padStart(2, "0");
+  return p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + (seg ? ":" + p(d.getUTCSeconds()) : ""); };
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const fecha = t => { const d = new Date((t + OFF) * 1000); return d.getUTCDate() + " de " + MESES[d.getUTCMonth()] + " de " + d.getUTCFullYear(); };
+const fmt = n => n == null ? "—" : Math.round(n).toLocaleString("es-VE");
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let P = null;
+
+// --- tema
+const raiz = document.documentElement;
+try { const t = localStorage.getItem("tema"); if (t) raiz.dataset.theme = t; } catch (e) {}
+document.getElementById("tema").onclick = () => {
+  const oscuro = raiz.dataset.theme ? raiz.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  raiz.dataset.theme = oscuro ? "light" : "dark";
+  try { localStorage.setItem("tema", raiz.dataset.theme); } catch (e) {}
+  dibuja();
+};
+
+function lienzo(id, alto) {
+  const c = document.getElementById(id), r = window.devicePixelRatio || 1;
+  const w = c.parentElement.clientWidth;
+  c.width = Math.round(w * r); c.height = Math.round(alto * r); c.style.height = alto + "px";
+  const g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
+  return { c, g, w, h: alto };
+}
+
+// --- fichas de estado
+function fichas() {
+  const e = P.estado || {}, ahora = Date.now() / 1000;
+  const est = { GRABANDO: ["Grabando", "--good"], ESPERA_HORA: ["Esperando hora", "--warning"],
+    ESPERA_ADC: ["Esperando ADC", "--warning"], ESPERA_PENDRIVE: ["Sin almacenamiento", "--critical"] }[e.estado]
+    || [e.estado || "—", "--text-muted"];
+  document.getElementById("f-estado").innerHTML =
+    `<span class="punto" style="background:var(${est[1]})" aria-hidden="true"></span>${est[0]}`;
+  if (e.desde) document.getElementById("f-desde").textContent = "desde las " + hhmm(Date.parse(e.desde) / 1000);
+  document.getElementById("f-sps").textContent = e.fs_real_mhz ? (e.fs_real_mhz / 1000).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—";
+  document.getElementById("f-perd").textContent = e.perdidos ?? "—";
+  document.getElementById("f-fin").textContent = hhmm(P.fin);
+  const min = Math.round((ahora - P.fin) / 60);
+  const ed = document.getElementById("f-edad");
+  ed.textContent = min <= 5 ? "hace " + Math.max(min, 0) + " min" : "⚠ sin datos nuevos desde hace " + min + " min";
+  ed.style.color = min <= 5 ? "" : "var(--warning)";
+  const vieja = min > 60, mu = document.getElementById("muestra");
+  mu.style.display = vieja ? "block" : "none";
+  if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, del ${fecha(P.fin)} (12 horas hasta las ${hhmm(P.fin)}). La publicación automática cada 2 minutos está en construcción.`;
+  document.getElementById("m-proto").classList.toggle("muestra-vieja", vieja);
+  document.getElementById("pie-gen").textContent = "panel generado a las " + hhmm(P.generado) + " (hora de Venezuela)";
+}
+
+// --- helicorder
+const FILA_S = 1800;
+let H = null;
+function heli() {
+  const hc = P.helicorder, n = hc.max.length, porFila = FILA_S / hc.paso_s, filas = Math.ceil(n / porFila);
+  const anchoW = document.getElementById("c-heli").clientWidth;
+  const altoF = anchoW < 500 ? 20 : 24, izq = 46, der = 6, arr = 4;
+  const L = lienzo("heli", filas * altoF + arr + 4), g = L.g;
+  const ancho = L.w - izq - der, bw = ancho / porFila;
+  const vals = hc.max.filter(v => v != null).sort((a, b) => a - b);
+  const tope = vals[Math.floor(vals.length * 0.985)] || 1;       // escala: se recortan los mayores
+  g.clearRect(0, 0, L.w, L.h);
+  g.font = "12px system-ui, sans-serif"; g.textBaseline = "middle";
+  const cGrid = css("--grid"), cTxt = css("--text-muted"), cMax = css("--series-1-tint"), cRms = css("--series-1"), cDet = css("--series-2");
+  for (let f = 0; f < filas; f++) {
+    const y0 = arr + f * altoF, ym = y0 + altoF / 2;
+    g.fillStyle = cGrid; g.fillRect(izq, ym, ancho, 1);
+    g.fillStyle = cTxt; g.textAlign = "right";
+    if (f % 2 === 0 || altoF >= 24) g.fillText(hhmm(P.inicio + f * FILA_S), izq - 6, ym);
+    for (let k = 0; k < porFila; k++) {
+      const i = f * porFila + k; if (i >= n || hc.max[i] == null) continue;
+      const x = izq + k * bw, mitad = altoF / 2 - 1.5;
+      const hm = Math.max(0.6, Math.min(1, hc.max[i] / tope) * mitad), hr = Math.max(0.5, Math.min(1, hc.rms[i] / tope) * mitad);
+      g.fillStyle = cMax; g.fillRect(x, ym - hm, Math.max(bw - 0.3, 0.7), hm * 2);
+      g.fillStyle = cRms; g.fillRect(x, ym - hr, Math.max(bw - 0.3, 0.7), hr * 2);
+    }
+  }
+  g.fillStyle = cDet;
+  for (const d of P.detecciones || []) {
+    const i = (d.t - P.inicio) / hc.paso_s; if (i < 0 || i >= n) continue;
+    const f = Math.floor(i / porFila), k = i - f * porFila, x = izq + k * bw, y0 = arr + f * altoF;
+    g.beginPath(); g.moveTo(x - 2.5, y0); g.lineTo(x + 2.5, y0); g.lineTo(x, y0 + 4); g.fill();
+  }
+  H = { izq, ancho, bw, altoF, arr, porFila, n, filas };
+}
+function tipHeli(ev) {
+  const tip = document.getElementById("tip-heli"); if (!H) return;
+  const r = ev.currentTarget.getBoundingClientRect(), mx = ev.clientX - r.left, my = ev.clientY - r.top;
+  const f = Math.floor((my - H.arr) / H.altoF), k = Math.floor((mx - H.izq) / H.bw), i = f * H.porFila + k;
+  if (f < 0 || f >= H.filas || k < 0 || k >= H.porFila || i >= H.n) { tip.style.display = "none"; return; }
+  const hc = P.helicorder, t = P.inicio + i * hc.paso_s;
+  const dets = (P.detecciones || []).filter(d => d.t >= t - 5 && d.t < t + hc.paso_s + 5).length;
+  tip.innerHTML = hc.max[i] == null ? `<b>${hhmm(t, 1)}</b><br><span class="m">sin datos (hueco)</span>`
+    : `<b>${hhmm(t, 1)}</b><br>pico ${fmt(hc.max[i])} nm/s<br>rms ${fmt(hc.rms[i])} nm/s` + (dets ? `<br><span class="m">${dets} detección(es)</span>` : "");
+  tip.style.display = "block";
+  const x = Math.min(mx + 12, r.width - tip.offsetWidth - 4);
+  tip.style.left = Math.max(4, x) + "px"; tip.style.top = Math.max(0, my - tip.offsetHeight - 8) + "px";
+}
+
+// --- traza reciente
+let R = null;
+function rec() {
+  const rc = P.reciente, v = rc.v, n = v.length;
+  const L = lienzo("rec", 220), g = L.g, izq = 62, der = 8, arr = 10, aba = 26;
+  const ancho = L.w - izq - der, alto = L.h - arr - aba, ym = arr + alto / 2;
+  let a = 1; for (const z of v) if (z != null) a = Math.max(a, Math.abs(z));
+  const paso = escala(a); a = Math.ceil(a / paso) * paso;
+  g.clearRect(0, 0, L.w, L.h); g.font = "12px system-ui, sans-serif";
+  const cGrid = css("--grid"), cTxt = css("--text-muted");
+  g.textAlign = "right"; g.textBaseline = "middle";
+  for (let y = -a; y <= a + 1e-9; y += paso) {
+    const py = ym - y / a * alto / 2; g.fillStyle = cGrid; g.fillRect(izq, Math.round(py), ancho, 1);
+    g.fillStyle = cTxt; g.fillText(fmt(y), izq - 6, py);
+  }
+  g.textAlign = "center"; g.textBaseline = "top";
+  for (let s = 0; s <= 120; s += 30) {
+    const px = izq + s / 120 * ancho; g.fillStyle = cTxt; g.fillText(hhmm(rc.inicio + s, 1), Math.min(Math.max(px, izq + 24), L.w - 28), arr + alto + 8);
+  }
+  g.strokeStyle = css("--series-1"); g.lineWidth = 1.5; g.lineJoin = "round"; g.beginPath();
+  let sube = true;
+  for (let i = 0; i < n; i++) {
+    if (v[i] == null) { sube = true; continue; }
+    const px = izq + i / (n - 1) * ancho, py = ym - v[i] / a * alto / 2;
+    sube ? g.moveTo(px, py) : g.lineTo(px, py); sube = false;
+  }
+  g.stroke();
+  R = { izq, ancho, arr, alto, ym, a, n };
+}
+function escala(a) { const e = Math.pow(10, Math.floor(Math.log10(a))); for (const m of [1, 2, 5, 10]) if (a / (m * e) <= 2.5) return m * e; return 10 * e; }
+function tipRec(ev) {
+  const tip = document.getElementById("tip-rec"); if (!R) return;
+  const r = ev.currentTarget.getBoundingClientRect(), mx = ev.clientX - r.left;
+  const i = Math.round((mx - R.izq) / R.ancho * (R.n - 1));
+  if (i < 0 || i >= R.n) { tip.style.display = "none"; dibujaRec(); return; }
+  const rc = P.reciente, t = rc.inicio + i / rc.fs, z = rc.v[i];
+  dibujaRec(R.izq + i / (R.n - 1) * R.ancho);
+  tip.innerHTML = `<b>${hhmm(t, 1)}</b><br>${z == null ? '<span class="m">sin dato</span>' : fmt(z) + " nm/s"}`;
+  tip.style.display = "block";
+  tip.style.left = Math.max(4, Math.min(mx + 12, r.width - tip.offsetWidth - 4)) + "px"; tip.style.top = "4px";
+}
+function dibujaRec(cx) {
+  rec(); if (cx == null) return;
+  const g = document.getElementById("rec").getContext("2d");
+  g.fillStyle = css("--text-muted"); g.fillRect(Math.round(cx), R.arr, 1, R.alto);
+}
+
+// --- tabla por hora
+function tabla() {
+  const hc = P.helicorder, porHora = 3600 / hc.paso_s, filas = [];
+  for (let h = 0; h * porHora < hc.max.length; h++) {
+    const m = hc.max.slice(h * porHora, (h + 1) * porHora).filter(x => x != null);
+    const r = hc.rms.slice(h * porHora, (h + 1) * porHora).filter(x => x != null).sort((a, b) => a - b);
+    const t = P.inicio + h * 3600, d = (P.detecciones || []).filter(x => x.t >= t && x.t < t + 3600).length;
+    filas.push(`<tr><td>${hhmm(t)}–${hhmm(t + 3600)}</td><td>${r.length ? fmt(r[r.length >> 1]) : "—"}</td><td>${m.length ? fmt(Math.max(...m)) : "—"}</td><td>${Math.round(100 * m.length / porHora)} %</td><td>${d}</td></tr>`);
+  }
+  document.getElementById("tabla").innerHTML = `<table><thead><tr><th>Hora</th><th>rms mediano (nm/s)</th><th>pico máximo (nm/s)</th><th>con datos</th><th>detecciones</th></tr></thead><tbody>${filas.join("")}</tbody></table>`;
+}
+
+function dibuja() { if (!P) return; fichas(); heli(); rec(); }
+async function carga() {
+  try {
+    const r = await fetch("datos.json?t=" + Date.now(), { cache: "no-store" });
+    P = await r.json(); dibuja(); tabla();
+  } catch (e) { document.getElementById("f-estado").textContent = "sin conexión"; }
+}
+const ch = document.getElementById("heli"), cr = document.getElementById("rec");
+ch.addEventListener("pointermove", tipHeli); ch.addEventListener("pointerleave", () => document.getElementById("tip-heli").style.display = "none");
+cr.addEventListener("pointermove", tipRec); cr.addEventListener("pointerleave", () => { document.getElementById("tip-rec").style.display = "none"; dibujaRec(); });
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(dibuja, 120); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", dibuja);
+carga(); setInterval(carga, 120000);
+// menú: marca la sección visible
+const enlaces = [...document.querySelectorAll(".menu a")];
+const vigia = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting)
+  enlaces.forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + e.target.id ? "true" : "false")); }),
+  { rootMargin: "-40% 0px -55% 0px" });
+["porque", "prototipo", "creditos"].forEach(id => vigia.observe(document.getElementById(id)));
+</script>
+</body>
+</html>
