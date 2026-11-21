@@ -22,6 +22,7 @@
   --warning: #b86e00;
   --critical: #c42b2a;
   --accent: #1a4f8f;
+  --resalta: #a8660a;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -40,6 +41,7 @@
     --warning: #d99a2b;
     --critical: #e66767;
     --accent: #8fb8ee;
+    --resalta: #e3a33b;
   }
 }
 :root[data-theme="dark"] {
@@ -47,7 +49,7 @@
   --surface-0: #111110; --surface-1: #1a1a19; --border: #34332f; --grid: #2a2a27;
   --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
   --series-1: #3987e5; --series-1-tint: #2c4a70; --series-2: #d95926;
-  --good: #0ca30c; --warning: #d99a2b; --critical: #e66767; --accent: #8fb8ee;
+  --good: #0ca30c; --warning: #d99a2b; --critical: #e66767; --accent: #8fb8ee; --resalta: #e3a33b;
 }
 * { box-sizing: border-box; }
 body {
@@ -56,7 +58,7 @@ body {
 }
 .envoltura { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
 header { padding: 28px 0 8px; }
-.antetitulo { color: var(--text-muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.antetitulo { color: var(--resalta); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
 h1 { font-size: clamp(24px, 4.2vw, 34px); line-height: 1.15; margin: 6px 0 8px; }
 .sub { color: var(--text-secondary); margin: 0 0 12px; max-width: 60ch; }
 .aviso {
@@ -162,6 +164,8 @@ section[id] { scroll-margin-top: 64px; }
 .creditos a, .muestra a { color: var(--accent); text-underline-offset: 2px; }
 footer { color: var(--text-muted); font-size: 13.5px; padding: 8px 0 32px; }
 footer b { color: var(--text-secondary); }
+footer a { color: var(--accent); text-underline-offset: 2px; }
+footer div + div { margin-top: 2px; }
 .tema { float: right; background: none; border: 1px solid var(--border); color: var(--text-secondary);
   border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
 </style>
@@ -305,9 +309,7 @@ footer b { color: var(--text-secondary); }
 </div>
 <section class="tarjeta" aria-label="Créditos">
   <ul class="creditos">
-    <li><b>Responsable del proyecto:</b> Licenciado Físico Rommel Contreras.</li>
     <li><b>Últimos sismos del país:</b> widget del <a href="https://sismos.sigeos.org/" target="_blank" rel="noopener">catálogo sísmico de Venezuela</a>, con datos públicos del FUNVISIS.</li>
-    <li><b>Historia sísmica de Cumaná:</b> Altez, R. y Audemard, F. (2008), <i>Boletín Técnico IMME</i> 46-2.</li>
     <li><b>Divulgación:</b> <a href="https://tecnologiacumanesa.blogspot.com/2026/07/la-falla-de-el-pilar.html" target="_blank" rel="noopener">la falla de El Pilar</a>,
       <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-1766.html" target="_blank" rel="noopener">el sismo de 1766</a> y
       <a href="https://tecnologiacumanesa.blogspot.com/2026/07/el-sismo-de-cariaco-de-1997.html" target="_blank" rel="noopener">el de Cariaco de 1997</a>, en Tecnología Cumanesa.</li>
@@ -317,8 +319,9 @@ footer b { color: var(--text-secondary); }
 </section>
 
 <footer>
-  <b>Responsable:</b> Licenciado Físico Rommel Contreras · Estación XX.PICO1, canal EHZ ·
-  <span id="pie-gen"></span>
+  <div><b>Responsable:</b> Licenciado Físico Rommel Contreras ·
+  <a href="https://tecnologiacumanesa.blogspot.com/" target="_blank" rel="noopener">Tecnología Cumanesa</a> (blog)</div>
+  <div>Estación XX.PICO1, canal EHZ · <span id="pie-gen"></span></div>
 </footer>
 </div>
 
