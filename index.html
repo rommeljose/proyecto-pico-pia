@@ -243,7 +243,7 @@ footer div + div { margin-top: 2px; }
 <section class="fichas" aria-label="Estado de la estación">
   <div class="ficha"><div class="et">Estado</div><div class="va" id="f-estado">—</div><div class="no" id="f-desde"></div></div>
   <div class="ficha"><div class="et">Muestras por segundo</div><div class="va" id="f-sps">—</div><div class="no">medidas, no nominales</div></div>
-  <div class="ficha"><div class="et">Muestras perdidas</div><div class="va" id="f-perd">—</div><div class="no">desde que arrancó</div></div>
+  <div class="ficha"><div class="et">Muestras perdidas</div><div class="va" id="f-perd">—</div><div class="no" id="f-perd-no">desde que arrancó</div></div>
   <div class="ficha"><div class="et">Datos hasta</div><div class="va" id="f-fin">—</div><div class="no" id="f-edad"></div></div>
 </section>
 
@@ -359,21 +359,28 @@ function lienzo(id, alto) {
 function fichas() {
   const e = P.estado || {}, ahora = Date.now() / 1000;
   const est = { GRABANDO: ["Grabando", "--good"], ESPERA_HORA: ["Esperando hora", "--warning"],
-    ESPERA_ADC: ["Esperando ADC", "--warning"], ESPERA_PENDRIVE: ["Sin almacenamiento", "--critical"] }[e.estado]
+    ESPERA_ADC: ["Esperando ADC", "--warning"], ESPERA_PENDRIVE: ["Sin almacenamiento", "--critical"], CON_HUECOS: ["Con huecos", "--warning"] }[e.estado]
     || [e.estado || "—", "--text-muted"];
   document.getElementById("f-estado").innerHTML =
     `<span class="punto" style="background:var(${est[1]})" aria-hidden="true"></span>${est[0]}`;
   if (e.desde) document.getElementById("f-desde").textContent = "desde las " + hhmm(Date.parse(e.desde) / 1000);
   document.getElementById("f-sps").textContent = e.fs_real_mhz ? (e.fs_real_mhz / 1000).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—";
   document.getElementById("f-perd").textContent = e.perdidos ?? "—";
+  const horas = Math.round((P.fin - P.inicio) / 3600);
+  if (e.muestra) {
+    document.getElementById("f-perd-no").textContent = "en estas " + horas + " horas";
+    document.getElementById("t-rec").textContent = "De " + hhmm(P.reciente.inicio) + " a " + hhmm(P.fin) + ", en detalle";
+    document.getElementById("t-heli").textContent = horas + " horas del " + fecha(P.inicio) + ", de " + hhmm(P.inicio) + " a " + hhmm(P.fin);
+  }
   document.getElementById("f-fin").textContent = hhmm(P.fin);
   const min = Math.round((ahora - P.fin) / 60);
   const ed = document.getElementById("f-edad");
   ed.textContent = min <= 5 ? "hace " + Math.max(min, 0) + " min" : "⚠ sin datos nuevos desde hace " + min + " min";
   ed.style.color = min <= 5 ? "" : "var(--warning)";
+  if ((P.estado || {}).muestra) { ed.textContent = "registro de muestra, " + fecha(P.fin); ed.style.color = ""; }
   const vieja = min > 60, mu = document.getElementById("muestra");
   mu.style.display = vieja ? "block" : "none";
-  if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, del ${fecha(P.fin)} (12 horas hasta las ${hhmm(P.fin)}). La publicación automática cada 2 minutos está en construcción.`;
+  if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, del ${fecha(P.inicio)}, de ${hhmm(P.inicio)} a ${hhmm(P.fin)}${e.muestra ? ", una madrugada tranquila" : ""}. La publicación automática cada 2 minutos está en construcción.`;
   document.getElementById("m-proto").classList.toggle("muestra-vieja", vieja);
   document.getElementById("t-proto").classList.toggle("muestra-vieja", vieja);
   if (vieja) document.getElementById("f-desde").textContent = "así estaba a las " + hhmm(P.fin);
