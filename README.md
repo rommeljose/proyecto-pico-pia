@@ -3,7 +3,7 @@
 Estaciones sismológicas de bajo costo para el estado Sucre (Venezuela), y su
 primer prototipo funcionando en banco de pruebas.
 
-**Página del proyecto:** https://rommeljose.github.io/proyecto-pico-pia/
+**Página del proyecto:** https://pico-pia.sigeos.org/
 
 Este repositorio reúne la información pública del proyecto y sus avances.
 
