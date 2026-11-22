@@ -131,6 +131,24 @@ th { color: var(--text-muted); font-weight: 600; }
 .porque a { color: var(--accent); text-underline-offset: 2px; }
 .fuente { font-size: 12.5px; color: var(--text-muted); }
 .porque-widget iframe { display: block; border-radius: 8px; }
+.alcance h2 { margin-bottom: 10px; }
+.alcance > p { margin: 0 0 10px; color: var(--text-secondary); }
+.alcance p b { color: var(--text-primary); }
+.alcance blockquote {
+  margin: 4px 0 6px; padding: 10px 14px; border-left: 4px solid var(--resalta); background: var(--surface-0);
+  border-radius: 0 8px 8px 0; font-size: 15.5px; color: var(--text-primary);
+}
+.alcance blockquote p { margin: 0 0 4px; }
+.alcance blockquote .trad { color: var(--text-secondary); font-size: 14.5px; }
+.alcance .cita { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
+.alcance a { color: var(--accent); text-underline-offset: 2px; }
+.sirve { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
+@media (max-width: 640px) { .sirve { grid-template-columns: 1fr; } }
+.sirve h3 { font-size: 15.5px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.sirve ul { margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 14.5px; }
+.sirve li { margin: 0 0 5px; }
+.marca { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; color: #fff; flex: none; }
+.marca.si { background: var(--good); } .marca.no { background: var(--critical); }
 .porque-widget figcaption { font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center; }
 /* menú fijo */
 html { scroll-behavior: smooth; }
@@ -156,7 +174,7 @@ section[id] { scroll-margin-top: 64px; }
   animation: latido 1.6s ease-out infinite;
 }
 .muestra-vieja .latido, .muestra-vieja .latido::after { background: var(--warning); }
-@media (max-width: 480px) { .menu .largo { display: none; } .menu a { padding: 6px 10px; } }
+@media (max-width: 480px) { .menu .largo { display: none; } .menu ul { gap: 0; } .menu a { padding: 6px 8px; font-size: 14px; gap: 5px; } }
 @keyframes latido { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(3); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .latido::after { animation: none; } }
 .seccion-t { font-size: 22px; margin: 26px 0 10px; display: flex; align-items: center; gap: 10px; }
@@ -197,6 +215,7 @@ footer div + div { margin-top: 2px; }
 <nav class="menu" aria-label="Secciones">
   <ul>
     <li><a href="#porque">¿Por qué?</a></li>
+    <li><a href="#alcance">Alcance</a></li>
     <li><a href="#prototipo" class="destaca" id="m-proto"><span class="latido" aria-hidden="true"></span><span>Prototipo<span class="largo"> en banco de pruebas</span></span></a></li>
     <li><a href="#creditos"><span>Créditos<span class="largo"> y fotos</span></span></a></li>
   </ul>
@@ -236,6 +255,44 @@ footer div + div { margin-top: 2px; }
             title="Últimos sismos de Venezuela (catálogo sísmico)"></iframe>
     <figcaption>Datos públicos del FUNVISIS, actualizados cada 5 min</figcaption>
   </figure>
+</section>
+
+<section class="tarjeta alcance" id="alcance" aria-labelledby="t-alcance">
+  <h2 id="t-alcance">Qué proponemos, y qué no: una red de densificación</h2>
+  <p>Estas estaciones <b>no sustituyen</b> a las estaciones de referencia del FUNVISIS, de alta gama y costosas.
+  Lo que proponemos es una <b>red de densificación</b>: muchas estaciones de bajo costo que rellenan los huecos
+  entre las de referencia, para detectar y localizar mejor la sismicidad local y regional del estado Sucre.</p>
+  <p>Ese uso tiene respaldo. El Servicio Geológico de los Estados Unidos (USGS) comparó en laboratorio y en campo
+  una estación de bajo costo con geófono, la Raspberry Shake 4D, con sus sensores de referencia, y concluyó que
+  este tipo de estación es</p>
+  <blockquote lang="en">
+    <p>«an ideal candidate for use in densification of seismic networks designed to identify and characterize local and regional events»</p>
+    <p class="trad" lang="es">«un candidato ideal para densificar redes sísmicas diseñadas para identificar y caracterizar sismos locales y regionales»</p>
+  </blockquote>
+  <p class="cita">Anthony, R. E. y otros (2018). <i>Do Low-Cost Seismographs Perform Well Enough for Your Network?
+  An Overview of Laboratory Tests and Field Observations of the OSOP Raspberry Shake 4D.</i>
+  Seismological Research Letters. <a href="https://doi.org/10.1785/0220180251" target="_blank" rel="noopener">doi:10.1785/0220180251</a></p>
+  <div class="sirve">
+    <div>
+      <h3><span class="marca si" aria-hidden="true">✓</span>Para qué sirven</h3>
+      <ul>
+        <li>Detectar y localizar sismos <b>locales y regionales</b>. En ese estudio, desde magnitud 2,5 a 20–40 km
+        y desde 2,9 a 80–100 km.</li>
+        <li>Rellenar los huecos entre las estaciones de referencia, con más sensores cerca de las fallas.</li>
+        <li>Entregar datos en los formatos estándar que usan las redes sismológicas.</li>
+      </ul>
+    </div>
+    <div>
+      <h3><span class="marca no" aria-hidden="true">✕</span>Para qué no sirven</h3>
+      <ul>
+        <li>Estudios de <b>ruido sísmico ambiental</b>.</li>
+        <li><b>Telesismos</b>: de los sismos lejanos solo registran los grandes, de magnitud 6,5 o más.</li>
+        <li>Sustituir a una estación de referencia, con sensor de banda ancha, hora por GPS y calibración de laboratorio.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="cita">El estudio evaluó la Raspberry Shake 4D, no este prototipo. La validación propia, operando junto a
+  una estación de referencia, es parte del plan.</p>
 </section>
 
 <section id="prototipo" aria-labelledby="t-proto">
@@ -529,7 +586,7 @@ const enlaces = [...document.querySelectorAll(".menu a")];
 const vigia = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting)
   enlaces.forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + e.target.id ? "true" : "false")); }),
   { rootMargin: "-40% 0px -55% 0px" });
-["porque", "prototipo", "creditos"].forEach(id => vigia.observe(document.getElementById(id)));
+["porque", "alcance", "prototipo", "creditos"].forEach(id => vigia.observe(document.getElementById(id)));
 </script>
 </body>
 </html>
