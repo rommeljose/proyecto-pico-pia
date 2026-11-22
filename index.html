@@ -406,6 +406,11 @@ const hhmm = (t, seg) => { const d = new Date((t + OFF) * 1000);
   return p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + (seg ? ":" + p(d.getUTCSeconds()) : ""); };
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const fecha = t => { const d = new Date((t + OFF) * 1000); return d.getUTCDate() + " de " + MESES[d.getUTCMonth()] + " de " + d.getUTCFullYear(); };
+const diaMes = t => { const d = new Date((t + OFF) * 1000); return d.getUTCDate() + " de " + MESES[d.getUTCMonth()]; };
+// «del 22 de noviembre de 2026, de 02:00 a 06:00» o, si cruza la medianoche,
+// «del 21 de noviembre a las 18:00 al 22 de noviembre de 2026 a las 16:00»
+const rango = (a, b) => fecha(a) === fecha(b) ? "del " + fecha(a) + ", de " + hhmm(a) + " a " + hhmm(b)
+  : "del " + diaMes(a) + " a las " + hhmm(a) + " al " + fecha(b) + " a las " + hhmm(b);
 const fmt = n => n == null ? "—" : Math.round(n).toLocaleString("es-VE");
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 let P = null;
@@ -443,7 +448,7 @@ function fichas() {
   if (e.muestra) {
     document.getElementById("f-perd-no").textContent = "en estas " + horas + " horas";
     document.getElementById("t-rec").textContent = "De " + hhmm(P.reciente.inicio) + " a " + hhmm(P.fin) + ", en detalle";
-    document.getElementById("t-heli").textContent = horas + " horas del " + fecha(P.inicio) + ", de " + hhmm(P.inicio) + " a " + hhmm(P.fin);
+    document.getElementById("t-heli").textContent = horas + " horas, " + rango(P.inicio, P.fin);
   }
   document.getElementById("f-fin").textContent = hhmm(P.fin);
   const min = Math.round((ahora - P.fin) / 60);
@@ -453,7 +458,7 @@ function fichas() {
   if ((P.estado || {}).muestra) { ed.textContent = "registro de muestra, " + fecha(P.fin); ed.style.color = ""; }
   const vieja = min > 60, mu = document.getElementById("muestra");
   mu.style.display = vieja ? "block" : "none";
-  if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, del ${fecha(P.inicio)}, de ${hhmm(P.inicio)} a ${hhmm(P.fin)}${e.muestra ? ", una madrugada tranquila" : ""}. La publicación automática cada 2 minutos está en construcción.`;
+  if (vieja) mu.innerHTML = `<b>Datos de muestra.</b> Lo que se ve es un registro real de la estación, ${rango(P.inicio, P.fin)}${P.nota ? ": " + P.nota : ""}. La publicación automática cada 2 minutos está en construcción.`;
   document.getElementById("m-proto").classList.toggle("muestra-vieja", vieja);
   document.getElementById("t-proto").classList.toggle("muestra-vieja", vieja);
   if (vieja) document.getElementById("f-desde").textContent = "así estaba a las " + hhmm(P.fin);
@@ -478,7 +483,8 @@ function heli() {
     const y0 = arr + f * altoF, ym = y0 + altoF / 2;
     g.fillStyle = cGrid; g.fillRect(izq, ym, ancho, 1);
     g.fillStyle = cTxt; g.textAlign = "right";
-    if (f % 2 === 0 || altoF >= 24) g.fillText(hhmm(P.inicio + f * FILA_S), izq - 6, ym);
+    if (f % 2 === 0 || altoF >= 24) { const tf = P.inicio + f * FILA_S;
+      g.fillText(hhmm(tf) === "00:00" ? diaMes(tf).replace(" de ", "/").replace(/[a-z]+/, m => m.slice(0, 3)) : hhmm(tf), izq - 6, ym); }
     for (let k = 0; k < porFila; k++) {
       const i = f * porFila + k; if (i >= n || hc.max[i] == null) continue;
       const x = izq + k * bw, mitad = altoF / 2 - 1.5;
